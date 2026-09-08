@@ -7,7 +7,7 @@ The application intentionally stores only each learner's internal UUID, display 
 ## What is included
 
 - Responsive public Rich List, genuine activity ticker, monthly rankings and milestones
-- Passwordless staff sign-in with approved-account enforcement
+- Password-based staff sign-in with approved-account enforcement
 - Fixed £50K investment terminal; staff identity is derived from `auth.uid()` in SQL
 - Personal staff history and administrator tools for learners, staff and corrections
 - Public database functions that return ticker and display-name data only—never staff email or auth IDs
@@ -36,7 +36,7 @@ In **Authentication → URL Configuration**, for a repository named `bcbx` hoste
 
 Replace `username` and `bcbx` with the actual GitHub account and repository name. Preserve the trailing slash. If Vite starts on another local port, add that exact origin with its trailing slash as another Redirect URL.
 
-The application uses Supabase's PKCE flow. Authentication returns to the base URL using `?code=...`; the app exchanges it, removes the query string, and opens `#/staff`. The hash route works on GitHub Pages without server rewrites or a `404.html` workaround.
+The application uses Supabase email/password authentication, so login does not depend on email delivery or redirects. The `#/staff` hash route works on GitHub Pages without server rewrites or a `404.html` workaround.
 
 For local-first setup, the Site URL may temporarily be `http://localhost:5173/`, but change it to the production URL before launch. Both entries must remain in Redirect URLs.
 
@@ -44,7 +44,7 @@ For local-first setup, the Site URL may temporarily be `http://localhost:5173/`,
 
 The first administrator is bootstrapped once in SQL because there is not yet an administrator who can use the UI:
 
-1. In **Authentication → Users → Add user**, create/invite the staff member with their exact work email.
+1. In **Authentication → Users → Add user**, create the initial administrator with their exact work email and a password, with email already confirmed.
 2. Copy their user UUID.
 3. Run this in SQL Editor, replacing all sample values:
 
@@ -53,7 +53,7 @@ insert into public.staff (auth_user_id, email, display_name, ticker, role)
 values ('AUTH-USER-UUID', 'admin@boston.ac.uk', 'Administrator Name', 'SCAP', 'admin');
 ```
 
-Thereafter the administrator can add approved staff in the app. If an approved staff row is added before their first login, the database trigger links their auth account by exact, case-insensitive email when it is created. The UI does not create Auth users; invite them in **Authentication → Users** or let them request their first magic link after the approved staff row exists.
+Deploy the `create-staff-user` Edge Function with JWT verification enabled. Thereafter an administrator can create both the Auth user and approved staff record from the app, assigning an initial password without sending an email. The function holds the service-role capability inside Supabase and independently verifies that the caller is an active BCBX administrator; the service-role key must never be added to Vite or GitHub Pages environment variables.
 
 ## 2. Run locally
 
