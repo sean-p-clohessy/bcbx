@@ -13,3 +13,6 @@
 .investment-steps p+p{border-left:1px solid #29394d}
 .investment-steps b{display:inline-block;margin-bottom:5px;color:#e6eaf0;font-size:14px}
 @media(max-width:900px){.explainer .earning-grid,.investment-steps{grid-template-columns:1fr}.explainer .earning-grid article{min-height:0}.investment-steps p+p{border-left:0;border-top:1px solid #29394d}}
+
+/* Activity cards use a semantic footer; keep page-footer styles out of them. */
+.activity footer{background:transparent;color:inherit;padding:0;gap:0;font-size:inherit;flex-direction:row;align-items:center}
