@@ -16,6 +16,14 @@ const demoActivity:ActivityRow[]=[
  {investment_id:'2',learner_name:'Liam P.',staff_ticker:'JHBX',business_value:'Professionalism',amount:50000,created_at:new Date(Date.now()-900000).toISOString()},
  {investment_id:'3',learner_name:'Amelia R.',staff_ticker:'MGBX',business_value:'Progress',amount:50000,created_at:new Date(Date.now()-3600000).toISOString()},
 ]
+const earningWays=[
+ ['Initiative','Spot an opportunity, take action and contribute without waiting to be asked.'],
+ ['Excellence','Produce high-quality work that shows excellent knowledge, care and understanding.'],
+ ['Professionalism','Be reliable, communicate well and represent yourself and the department positively.'],
+ ['Leadership & Contribution','Support others, lead by example and make a positive contribution to your class or team.'],
+ ['Progress','Make significant improvement and show determination to develop your skills and performance.'],
+ ['Going Beyond','Take part in extra activities, competitions, projects or employer opportunities.'],
+]
 export function PublicDashboard(){
  const [leaders,setLeaders]=useState<LeaderboardRow[]>([]),[activity,setActivity]=useState<ActivityRow[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState('')
  const load=useCallback(async()=>{setLoading(true);setError('');try{if(!configured){setLeaders(demoLeaders);setActivity(demoActivity)}else{const [l,a]=await Promise.all([rpc<LeaderboardRow[]>('public_leaderboard'),rpc<ActivityRow[]>('public_recent_activity',{result_limit:20})]);setLeaders(l||[]);setActivity(a||[])}}catch(e){setError(e instanceof Error?e.message:'Unknown error')}finally{setLoading(false)}},[])
@@ -24,7 +32,7 @@ export function PublicDashboard(){
  if(loading)return <Loading/>; if(error)return <ErrorState message={error} onRetry={load}/>
  return <>
   {!configured&&<div className="demo-banner">Preview data — connect Supabase to use the live database.</div>}
-  <section className="hero"><div><p className="eyebrow">Millionaires Club</p><h1>Live Rich List</h1><p className="hero-copy">Track your progress to £1,000,000 through BCBX investments.</p></div><div className="market-status"><span/> LIVE MARKET</div></section>
+  <section className="hero"><div><p className="eyebrow">Millionaires Club</p><h1>Rich List</h1><p className="hero-copy">Track your progress to £1,000,000 through BCBX investments.</p></div><div className="market-status"><span/> LIVE MARKET</div></section>
   <div className="ticker" aria-label="Recent BCBX investments"><div className="ticker-track">{activity.length?activity.concat(activity).map((x,i)=><span key={`${x.investment_id}-${i}`}><b>{x.staff_ticker}</b> invested £50K in {x.learner_name} <i>• {x.business_value}</i></span>):<span>The BCBX market is opening soon.</span>}</div></div>
   <section className="stats-grid" aria-label="Market summary">
    <article><span>Top Earner This Month</span><strong>{stats.top?.display_name||'—'}</strong><em>{stats.top?`+${compactMoney(stats.top.month_value)}`:'No investments yet'}</em></article>
@@ -39,7 +47,7 @@ export function PublicDashboard(){
    <aside className="side-stack"><section className="panel"><div className="panel-heading"><h2>This Month’s Top Earners</h2></div>{leaders.filter(x=>x.month_value>0).sort((a,b)=>b.month_value-a.month_value).slice(0,5).map((x,i)=><div className="top-earner" key={x.learner_id}><span>{i+1}</span><b>{x.display_name}</b><em>+{compactMoney(x.month_value)}</em></div>)}</section>
    <section className="panel"><div className="panel-heading"><h2>Recent Investments</h2></div>{activity.slice(0,6).map(x=><article className="activity" key={x.investment_id}><div><b>{x.staff_ticker}</b> invested <strong>£50K</strong> in <b>{x.learner_name}</b></div><footer><ValueChip name={x.business_value}/><time>{relativeTime(x.created_at)}</time></footer></article>)}</section></aside>
   </div>
-  <section id="how" className="explainer"><p className="eyebrow">How it works</p><h2>Every investment matters.</h2><div>{['Demonstrate one of our Business Values','Your lecturer invests £50K in you','Your portfolio grows','Reach £250K, £500K and £750K milestones','Reach £1M and join the Millionaires Club'].map((x,i)=><article key={x}><span>0{i+1}</span><p>{x}</p></article>)}</div><strong>There is no limit. Keep earning investment and keep climbing the Rich List.</strong></section>
+  <section id="how" className="explainer"><p className="eyebrow">How it works</p><h2>How do I earn an investment?</h2><p className="explainer-intro">Stand out by demonstrating one of our Business Values. When a member of staff recognises it, they can invest a fictional £50K in you and your portfolio moves up the Rich List.</p><div className="earning-grid">{earningWays.map(([title,description],i)=><article key={title}><span>0{i+1}</span><h3>{title}</h3><p>{description}</p></article>)}</div><div className="investment-steps"><p><b>1. Show it</b><br/>Demonstrate a Business Value in your work, attitude or contribution.</p><p><b>2. Get recognised</b><br/>A member of staff awards you a £50K BCBX investment.</p><p><b>3. Climb the list</b><br/>Every investment grows your portfolio on the public Rich List.</p></div><strong>Keep demonstrating the values, reach £1M and join the Millionaires Club.</strong></section>
   <section id="milestones" className="milestones">{[['£250K','First Milestone'],['£500K','Half Million'],['£750K','Final Stretch'],['£1M','Millionaires Club']].map(([a,b])=><article key={a}><strong>{a}</strong><span>{b}</span></article>)}</section>
  </>
 }
