@@ -9,7 +9,7 @@ import type { Session } from '@supabase/supabase-js'
 export function StaffArea(){
  const [session,setSession]=useState<Session|null|undefined>(supabase?undefined:null),[profile,setProfile]=useState<StaffProfile|null>(null),[error,setError]=useState('')
  useEffect(()=>{if(!supabase)return;void supabase.auth.getSession().then(({data})=>setSession(data.session));const {data}=supabase.auth.onAuthStateChange((_e,s)=>setSession(s));return()=>data.subscription.unsubscribe()},[])
- useEffect(()=>{if(!session){setProfile(null);return}void rpc<StaffProfile>('my_staff_profile').then(setProfile).catch(e=>setError(e.message))},[session])
+ useEffect(()=>{if(!session){setProfile(null);return}setError('');void rpc<StaffProfile[]>('my_staff_profile').then(rows=>{const staff=rows[0];if(!staff)throw new Error('This login is not linked to a BCBX staff account.');setProfile(staff)}).catch(e=>setError(e.message))},[session])
  if(session===undefined)return <Loading label="Checking staff access…"/>; if(!supabase)return <Login unavailable/>; if(!session)return <Login/>; if(error)return <div className="state error"><h2>Staff access unavailable</h2><p>{error}</p><button onClick={()=>supabase?.auth.signOut()}>Sign out</button></div>; if(!profile)return <Loading label="Loading investment terminal…"/>; if(!profile.active)return <div className="state"><h2>Account inactive</h2><p>Ask a BCBX administrator to activate your approved staff account.</p></div>
  return <StaffTerminal profile={profile}/>
 }
